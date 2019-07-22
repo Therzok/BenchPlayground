@@ -25,7 +25,7 @@ namespace BenchPlayground.Benchmarks
             public override string ToString() => displayString;
 
             public static TestData A0 { get; } = new TestData(new object[0]);
-            public static TestData A1 { get; } = new TestData(new object[] { 1 });
+            public static TestData A1 { get; } = new TestData(new object[] { new object() });
             public static TestData E0 { get; } = new TestData(Enumerable.Empty<object>());
             public static TestData E1 { get; } = new TestData(Enumerable.Repeat(new object(), 1));
         }
