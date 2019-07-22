@@ -50,42 +50,21 @@ namespace BenchPlayground
 				{
 				}
 			}
-		}
-	}
+        }
 
-	class Simple
-	{
-		public int X { get; set; }
-	}
+        class Base { public int X { get; set; } }
 
-	class SimpleWithFinalizer
-	{
-		~SimpleWithFinalizer()
-		{
+        class Simple : Base { }
 
-		}
+        class SimpleWithFinalizer { ~SimpleWithFinalizer() { } }
 
-		public int X { get; set; }
-	}
+        class SimpleWithDispose : IDisposable { public void Dispose() { } }
 
-	class SimpleWithDispose : IDisposable
-	{
-		public void Dispose()
-		{
-		}
-	}
+        class SimpleWithFinalizerDispose : IDisposable
+        {
+            public void Dispose() => GC.SuppressFinalize(this);
 
-	class SimpleWithFinalizerDispose : IDisposable
-	{
-		public void Dispose()
-		{
-			GC.SuppressFinalize(this);
-		}
-
-		~SimpleWithFinalizerDispose()
-		{
-		}
-
-		public int X { get; set; }
-	}
+            ~SimpleWithFinalizerDispose() {}
+        }
+    }
 }
