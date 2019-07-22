@@ -6,7 +6,7 @@ using BenchmarkDotNet.Attributes;
 namespace BenchPlayground.Benchmarks
 {
 	[MemoryDiagnoser]
-	public class OverheadOfDictionary
+	public class EnumDictionaryOverhead
 	{
 		public enum EventDataKind
 		{
@@ -23,7 +23,7 @@ namespace BenchPlayground.Benchmarks
 
 		public (EventDataKind, TimeSpan)[] Values { get; }
 
-		public OverheadOfDictionary()
+		public EnumDictionaryOverhead()
 		{
 			var list = new List<(EventDataKind, TimeSpan)>();
 
