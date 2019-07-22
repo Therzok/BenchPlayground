@@ -9,7 +9,7 @@ using BenchmarkDotNet.Engines;
 namespace BenchPlayground.Benchmarks
 {
     [MemoryDiagnoser]
-    [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByMethod)]
+    [Orderer(BenchmarkDotNet.Order.SummaryOrderPolicy.Method, BenchmarkDotNet.Order.MethodOrderPolicy.Declared)]
     public abstract class BaseLinqConcat
     {
         public class TestData
@@ -24,25 +24,15 @@ namespace BenchPlayground.Benchmarks
 
             public override string ToString() => displayString;
 
-            public static TestData A0 => new TestData(new object[0]);
-            public static TestData A1 => new TestData(new object[] { 1 });
-            public static TestData E0 => new TestData(Enumerable.Empty<object>());
-            public static TestData E1 => new TestData(Enumerable.Repeat(new object(), 1));
+            public static TestData A0 { get; } = new TestData(new object[0]);
+            public static TestData A1 { get; } = new TestData(new object[] { 1 });
+            public static TestData E0 { get; } = new TestData(Enumerable.Empty<object>());
+            public static TestData E1 { get; } = new TestData(Enumerable.Repeat(new object(), 1));
         }
 
-        public static IEnumerable<TestData> AValues()
-        {
-            yield return TestData.E0;
-            yield return TestData.A1;
-        }
+        public static IEnumerable<TestData> AValues { get; } = new[] { TestData.E0, TestData.A1 };
 
-        public static IEnumerable<TestData> BValues()
-        {
-            yield return TestData.A0;
-            yield return TestData.A1;
-            yield return TestData.E0;
-            yield return TestData.E1;
-        }
+        public static IEnumerable<TestData> BValues { get; } = new[] { TestData.A0, TestData.A1, TestData.E0, TestData.E1 };
 
         [ParamsSource(nameof(AValues))]
         public TestData A { get; set; }
@@ -102,6 +92,18 @@ namespace BenchPlayground.Benchmarks
         static bool IsEmpty<T>(IEnumerable<T> source) => source == Enumerable.Empty<T>() || (source is T[] array && array.Length == 0);
     }
 
+    public class FastLinqConcat : BaseLinqConcat
+    {
+        [Benchmark(Baseline = true)]
+        public object Concat() => LinqConcat(A.Value, B.Value);
+
+        [Benchmark]
+        public object FConcat() => FastConcat(A.Value, B.Value);
+
+        [Benchmark]
+        public object FPartConcat() => FastPartConcat(A.Value, B.Value);
+    }
+
     public class FastLinqConsume : BaseLinqConcat
     {
         private readonly Consumer consumer = new Consumer();
@@ -126,17 +128,5 @@ namespace BenchPlayground.Benchmarks
 
         [Benchmark]
         public void FPartConcat() => fastPartConcat.Consume(consumer);
-    }
-
-    public class FastLinqConcat : BaseLinqConcat
-    {
-        [Benchmark(Baseline = true)]
-        public object Concat() => LinqConcat(A.Value, B.Value);
- 
-        [Benchmark]
-        public object FConcat() => FastConcat(A.Value, B.Value);
-
-        [Benchmark]
-        public object FPartConcat() => FastPartConcat(A.Value, B.Value);
     }
 }
