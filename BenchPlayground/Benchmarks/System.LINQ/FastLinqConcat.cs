@@ -9,9 +9,8 @@ using BenchmarkDotNet.Engines;
 namespace BenchPlayground.Benchmarks
 {
     [MemoryDiagnoser]
-    [CategoriesColumn]
-    [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory, BenchmarkLogicalGroupRule.ByMethod)]
-    public class FastLinqConcat
+    [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByMethod)]
+    public abstract class BaseLinqConcat
     {
         public class TestData
         {
@@ -25,75 +24,57 @@ namespace BenchPlayground.Benchmarks
 
             public override string ToString() => displayString;
 
-            public static TestData Array0 => new TestData(new object[0]);
-            public static TestData Array1 => new TestData (new object[] { 1 });
-            public static TestData Enum0 => new TestData(Enumerable.Empty<object>());
-            public static TestData Enum1 => new TestData(Enumerable.Repeat(new object(), 1));
+            public static TestData A0 => new TestData(new object[0]);
+            public static TestData A1 => new TestData(new object[] { 1 });
+            public static TestData E0 => new TestData(Enumerable.Empty<object>());
+            public static TestData E1 => new TestData(Enumerable.Repeat(new object(), 1));
         }
 
-        private readonly Consumer consumer = new Consumer();
-
-        public static IEnumerable<TestData> PossibleValues()
+        public static IEnumerable<TestData> AValues()
         {
-            yield return TestData.Array0;
-            yield return TestData.Array1;
-            yield return TestData.Enum0;
-            yield return TestData.Enum1;
+            yield return TestData.E0;
+            yield return TestData.A1;
         }
 
-        [ParamsSource(nameof(PossibleValues))]
+        public static IEnumerable<TestData> BValues()
+        {
+            yield return TestData.A0;
+            yield return TestData.A1;
+            yield return TestData.E0;
+            yield return TestData.E1;
+        }
+
+        [ParamsSource(nameof(AValues))]
         public TestData A { get; set; }
 
-        [ParamsSource(nameof(PossibleValues))]
+        [ParamsSource(nameof(BValues))]
         public TestData B { get; set; }
 
-        const int loops = 100;
+        const int loops = 10;
 
-        static IEnumerable<object> DoConcat(IEnumerable<object> a, IEnumerable<object> b)
+        protected static IEnumerable<object> LinqConcat(IEnumerable<object> a, IEnumerable<object> b)
         {
             for (int i = 0; i < loops; ++i)
                 a = a.Concat(b);
             return a;
         }
 
-        [BenchmarkCategory("Create"), Benchmark(Baseline = true)]
-        public object Concat() => DoConcat(A.Value, B.Value);
-
-        [BenchmarkCategory("Consume"), Benchmark(Baseline = true)]
-        public void ConcatConsume() => DoConcat(A.Value, B.Value).Consume(consumer);
-
-        static IEnumerable<object> DoFastConcat(IEnumerable<object> a, IEnumerable<object> b)
+        protected static IEnumerable<object> FastConcat(IEnumerable<object> a, IEnumerable<object> b)
         {
             for (int i = 0; i < loops; ++i)
-                a = FastConcat(a, b);
+                a = Concat(a, b);
             return a;
         }
 
-        [BenchmarkCategory("Create"), Benchmark]
-        public object FConcat() => DoFastConcat(A.Value, B.Value);
-
-        [BenchmarkCategory("Consume"), Benchmark]
-        public void FConcatConsume() => DoFastConcat(A.Value, B.Value).Consume(consumer);
-
-        static IEnumerable<object> DoPartConcat(IEnumerable<object> a, IEnumerable<object> b)
+        protected static IEnumerable<object> FastPartConcat(IEnumerable<object> a, IEnumerable<object> b)
         {
             for (int i = 0; i < loops; ++i)
-                a = FastConcatPartition(a, b);
+                a = ConcatPartition(a, b);
             return a;
         }
 
-        [BenchmarkCategory("Create"), Benchmark]
-        public object FPartConcat() => DoPartConcat(A.Value, B.Value);
-
-        [BenchmarkCategory("Consume"), Benchmark]
-        public void FPartConcatConsume() => DoPartConcat(A.Value, B.Value).Consume(consumer);
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool IsEmpty<T>(IEnumerable<T> source)
-            => source == Enumerable.Empty<T>() || (source is T[] array && array.Length == 0);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IEnumerable<T> FastConcatPartition<T> (IEnumerable<T> first, IEnumerable<T> second)
+        static IEnumerable<T> ConcatPartition<T>(IEnumerable<T> first, IEnumerable<T> second)
         {
             if (IsEmpty(second))
             {
@@ -103,7 +84,7 @@ namespace BenchPlayground.Benchmarks
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IEnumerable<T> FastConcat<T>(IEnumerable<T> first, IEnumerable<T> second)
+        static IEnumerable<T> Concat<T>(IEnumerable<T> first, IEnumerable<T> second)
         {
             if (IsEmpty(second))
             {
@@ -116,5 +97,46 @@ namespace BenchPlayground.Benchmarks
             }
             return first.Concat(second);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static bool IsEmpty<T>(IEnumerable<T> source) => source == Enumerable.Empty<T>() || (source is T[] array && array.Length == 0);
+    }
+
+    public class FastLinqConsume : BaseLinqConcat
+    {
+        private readonly Consumer consumer = new Consumer();
+
+        IEnumerable<object> linqConcat;
+        IEnumerable<object> fastConcat;
+        IEnumerable<object> fastPartConcat;
+
+        [GlobalSetup]
+        public void GlobalSetup()
+        {
+            linqConcat = LinqConcat(A.Value, B.Value);
+            fastConcat = FastConcat(A.Value, B.Value);
+            fastPartConcat = FastPartConcat(A.Value, B.Value);
+        }
+
+        [Benchmark(Baseline = true)]
+        public void Concat() => linqConcat.Consume(consumer);
+
+        [Benchmark]
+        public void FConcat() => fastConcat.Consume(consumer);
+
+        [Benchmark]
+        public void FPartConcat() => fastPartConcat.Consume(consumer);
+    }
+
+    public class FastLinqConcat : BaseLinqConcat
+    {
+        [Benchmark(Baseline = true)]
+        public object Concat() => LinqConcat(A.Value, B.Value);
+ 
+        [Benchmark]
+        public object FConcat() => FastConcat(A.Value, B.Value);
+
+        [Benchmark]
+        public object FPartConcat() => FastPartConcat(A.Value, B.Value);
     }
 }
