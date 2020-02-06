@@ -5,7 +5,7 @@ BenchmarkDotNet=v0.12.0, OS=macOS 10.15.3 (19D76) [Darwin 19.3.0]
 Intel Core i7-4980HQ CPU 2.80GHz (Haswell), 1 CPU, 8 logical and 4 physical cores
   [Host]     : Mono 6.10.0.64 (2019-12/0011444f0b6 Tue), X64  [AttachedDebugger]
   DefaultJob : Mono 6.10.0.64 (2019-12/0011444f0b6 Tue), X64 
-
+```
 
 | Method | Count |          Mean |        Error |       StdDev |  Gen 0 |  Gen 1 |  Gen 2 | Allocated |
 |------- |------ |--------------:|-------------:|-------------:|-------:|-------:|-------:|----------:|
@@ -16,13 +16,13 @@ Intel Core i7-4980HQ CPU 2.80GHz (Haswell), 1 CPU, 8 logical and 4 physical core
 |   List |   512 | 912,757.05 ns | 5,796.985 ns | 5,422.504 ns | 1.9531 |      - |      - |         - |
 |    Set |   512 |  30,371.67 ns |    83.506 ns |    78.112 ns | 5.3406 | 0.8850 | 0.8850 |         - |
 
-
+``` ini
 `<Object>`
 BenchmarkDotNet=v0.12.0, OS=macOS 10.15.3 (19D76) [Darwin 19.3.0]
 Intel Core i7-4980HQ CPU 2.80GHz (Haswell), 1 CPU, 8 logical and 4 physical cores
   [Host]     : Mono 6.10.0.64 (2019-12/0011444f0b6 Tue), X64  [AttachedDebugger]
   DefaultJob : Mono 6.10.0.64 (2019-12/0011444f0b6 Tue), X64 
-
+```
 
 | Method | Count |           Mean |       Error |      StdDev |  Gen 0 |  Gen 1 |  Gen 2 | Allocated |
 |------- |------ |---------------:|------------:|------------:|-------:|-------:|-------:|----------:|
