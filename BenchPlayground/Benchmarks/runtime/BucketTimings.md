@@ -7,13 +7,6 @@ Intel Core i7-4980HQ CPU 2.80GHz (Haswell), 1 CPU, 8 logical and 4 physical core
 
 ```
 
-// * Summary *
-
-BenchmarkDotNet=v0.12.0, OS=macOS 10.15.3 (19D76) [Darwin 19.3.0]
-Intel Core i7-4980HQ CPU 2.80GHz (Haswell), 1 CPU, 8 logical and 4 physical cores
-  [Host]     : Mono 6.10.0.64 (2019-12/0011444f0b6 Tue), X64 
-  DefaultJob : Mono 6.10.0.64 (2019-12/0011444f0b6 Tue), X64 
-
 
 |           Method | MaximumValue |         Mean |       Error |      StdDev | Ratio | RatioSD |
 |----------------- |------------- |-------------:|------------:|------------:|------:|--------:|
