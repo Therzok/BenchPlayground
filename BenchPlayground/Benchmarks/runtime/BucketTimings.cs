@@ -113,7 +113,7 @@ namespace BenchPlayground
 
 			int CalculateBucket(TimeSpan duration)
 			{
-				long ms = (long)duration.TotalMilliseconds;
+				long ms = duration.Ticks / TimeSpan.TicksPerMillisecond;
 				for (var bucket = 0; bucket < bucketUpperLimit.Length; bucket++)
 				{
 					if (ms <= bucketUpperLimit[bucket])
@@ -131,13 +131,23 @@ namespace BenchPlayground
 				buckets[bucketNumber]++;
 			}
 
+#if NETFRAMEWORK
 			public void AddLog(TimeSpan duration)
 			{
-				var bucketNumber = Math.Log(duration.TotalMilliseconds, 2) - 3;
+				var bucketNumber = Math.Log(duration.Ticks / TimeSpan.TicksPerMillisecond, 2) - 3;
 				var upperLimit = bucketUpperLimit.Length - 1;
 				var bucketNumberNormalized = (bucketNumber < 0) ? 0 : (bucketNumber > upperLimit) ? upperLimit : bucketNumber;
 				buckets[(int)bucketNumberNormalized]++;
 			}
+#else
+			public void AddLog(TimeSpan duration)
+			{
+				var bucketNumber = Math.Log2(duration.TotalMilliseconds) - 3;
+				var upperLimit = bucketUpperLimit.Length - 1;
+				var bucketNumberNormalized = Math.Clamp(bucketNumber, 0, upperLimit);
+				buckets[(int)bucketNumberNormalized]++;
+			}
+#endif
 
 			public void Compare(Implementation other)
 			{
