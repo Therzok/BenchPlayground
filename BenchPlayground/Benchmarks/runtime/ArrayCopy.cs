@@ -7,10 +7,11 @@ using BenchmarkDotNet.Attributes;
 namespace BenchPlayground
 {
 	[GenericTypeArguments(typeof(int))]
-	[GenericTypeArguments(typeof(object))]
+	//[GenericTypeArguments(typeof(object))]
 	public class ArrayCopy<T> where T:new()
 	{
-		[Params(8, 32, 128, 512, 2048, 8196, 32784)]
+		//[Params(8, 32, 128, 512, 2048, 8196, 32784)]
+        [Params(1, 2, 4, 8, 16, 32)]
 		public int Count { get; set; }
 
 		T[] src;
