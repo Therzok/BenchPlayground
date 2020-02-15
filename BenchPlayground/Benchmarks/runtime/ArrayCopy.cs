@@ -53,5 +53,13 @@ namespace BenchPlayground
             Array.Copy(src, 0, result, 0, src.Length);
             return result;
         }
+
+        [Benchmark]
+        public T[] Span()
+        {
+            var result = new T[Count];
+            src.AsSpan().CopyTo(result.AsSpan());
+            return result;
+        }
 	}
 }
