@@ -5,7 +5,7 @@ using BenchmarkDotNet.Attributes;
 namespace BenchPlayground.Benchmarks.runtime
 {
     [MemoryDiagnoser]
-    public class SpanToString
+    public class SpanSliceToString
     {
         public IEnumerable<string> Items { get; } = new List<string>
         {
