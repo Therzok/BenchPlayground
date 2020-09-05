@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using BenchmarkDotNet.Attributes;
 
-namespace BenchPlayground.Benchmarks.runtime
+namespace BenchPlayground
 {
     [MemoryDiagnoser]
     public class GCHandleVsReference

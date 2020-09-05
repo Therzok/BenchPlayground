@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using BenchmarkDotNet.Attributes;
 
-namespace BenchPlayground.Benchmarks.runtime
+namespace BenchPlayground
 {
     [MemoryDiagnoser]
     public class GetType
