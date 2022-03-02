@@ -3,40 +3,53 @@ using System.Collections.Generic;
 
 namespace System
 {
-    public readonly struct CacheCode<T> : IEquatable<CacheCode<T>> where T:IEquatable<T>
+    public readonly struct CacheCode<T> : IEquatable<CacheCode<T>>, IEquatable<T> where T:IEquatable<T>
     {
         internal readonly T _value;
         internal readonly int _hashCode;
+        internal readonly IEqualityComparer<T>? _equalityComparer;
 
-        public CacheCode(T value, int hashCode)
+        public CacheCode(T value) : this(value, null)
         {
-            _value = value;
-            _hashCode = hashCode;
         }
 
-        public bool Equals(CacheCode<T> other) => _value.Equals(other);
+        public CacheCode(T value, IEqualityComparer<T>? comparer)
+        {
+            _value = value;
+            _equalityComparer = comparer;
 
-        public override bool Equals(object obj) => obj is CacheCode<T> other && Equals(other);
+            _hashCode = _equalityComparer?.GetHashCode(value) ?? value?.GetHashCode() ?? 0;
+        }
+
+        public bool Equals(T other) => _equalityComparer != null ? _equalityComparer.Equals(other) : _value.Equals(other);
+
+        public bool Equals(CacheCode<T> other) => Equals(other._value);
+
+        public override bool Equals(object obj)
+        {
+            return obj switch
+            {
+                CacheCode<T> cc => Equals(cc._value),
+                T c => Equals(c),
+                _ => false,
+            };
+        }
 
         public override int GetHashCode() => _hashCode;
 
         public override string ToString() => _value.ToString();
     }
 
-    public sealed class CacheCodeEqualityComparer<T> : IEqualityComparer<CacheCode<T>> where T:IEquatable<T>
-    {
-        public static IEqualityComparer<CacheCode<T>> Instance { get; } = new CacheCodeEqualityComparer<T>();
-
-        public bool Equals(CacheCode<T> x, CacheCode<T> y) => x._value.Equals(y._value);
-
-        public int GetHashCode(CacheCode<T> obj) => obj._hashCode;
-    }
-
     public static class HashCodeExtensions
     {
-        public static CacheCode<T> CacheCode<T>(this T obj) where T:IEquatable<T>
+        public static CacheCode<T> CacheCode<T>(this T obj) where T : IEquatable<T>
         {
-            return new CacheCode<T>(obj, obj.GetHashCode());
+            return new CacheCode<T>(obj, null);
+        }
+
+        public static CacheCode<T> CacheCode<T>(this T obj, IEqualityComparer<T> comparer) where T:IEquatable<T>
+        {
+            return new CacheCode<T>(obj, comparer);
         }
     }
 }

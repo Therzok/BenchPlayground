@@ -6,70 +6,53 @@ using BenchmarkDotNet.Attributes;
 
 namespace BenchPlayground
 {
-    [GenericTypeArguments(typeof(int))]
-    [GenericTypeArguments(typeof(TimeSpan))]
-    [GenericTypeArguments(typeof(string))]
-    public class CacheCodeBench<T> where T:IEquatable<T>
+    public class CacheCodeBench
     {
-        public T[] ValueArray
+        [ParamsSource(nameof(GetComparers))]
+        public StringComparison ComparisonType { get; set; }
+
+        public StringComparison[] GetComparers => new[] {
+            StringComparison.Ordinal,
+            StringComparison.OrdinalIgnoreCase,
+            StringComparison.CurrentCulture,
+        };
+
+        public IEnumerable<string> Paths { get; set; } = new[] {
+            "/Users/therzok/Work/BenchPlayground",
+            "/Applications/Visual Studio.app",
+            "/Users/therzok/Work/md/vsmac-copy/main/src/addins/Microsoft.VisualStudioMac.AddinMaker/Microsoft.VisualStudioMac.AddinMaker/NodeBuilders",
+            "/",
+        };
+
+        public IEnumerable<object> CacheCodePaths() => Paths.Select(x => (object)x.CacheCode(comparer));
+
+        StringComparer comparer;
+
+        [GlobalSetup]
+        public void Setup()
         {
-            get
-            {
-                if (typeof(T) == typeof(int))
-                    return (T[])(object)new[] { 0, byte.MaxValue, short.MaxValue };
-
-                if (typeof(T) == typeof(TimeSpan))
-                    return (T[])(object)new[] { TimeSpan.Zero, TimeSpan.FromHours(2), TimeSpan.FromDays(2) };
-
-                if (typeof(T) == typeof(string))
-                    return (T[])(object)new[] {
-                        string.Join("", Enumerable.Repeat("asdf", 100)),
-                        string.Join("", Enumerable.Repeat("ASDF", 100)),
-                        string.Join("", Enumerable.Repeat("aSdF", 100)),
-                    };
-
-                throw new NotImplementedException();
-            }
+            comparer = StringComparer.FromComparison(ComparisonType);
         }
-
-        public IEnumerable<T> ValuesSource => ValueArray;
 
         [Benchmark(Baseline = true)]
-        [ArgumentsSource(nameof(ValuesSource))]
-        public Dictionary<T, int> LoopUncache(T value)
+        [ArgumentsSource(nameof(Paths))]
+        public int GetHashCode(string path)
         {
-            var dictionary = new Dictionary<T, int>();
-
-            dictionary.Add(value, 0);
-            dictionary[value] = 1;
-            dictionary.Remove(value);
-            return dictionary;
+            return comparer.GetHashCode(path);
         }
 
         [Benchmark]
-        [ArgumentsSource(nameof(ValuesSource))]
-        public Dictionary<CacheCode<T>, int> LoopCache(T nocache)
+        [ArgumentsSource(nameof(CacheCodePaths))]
+        public int GetCacheCode(CacheCode<string> path)
         {
-            var dictionary = new Dictionary<CacheCode<T>, int>();
-            var value = nocache.CacheCode();
-
-            dictionary.Add(value, 0);
-            dictionary[value] = 1;
-            dictionary.Remove(value);
-            return dictionary;
+            return path.GetHashCode();
         }
 
         [Benchmark]
-        [ArgumentsSource(nameof(ValuesSource))]
-        public Dictionary<CacheCode<T>, int> LoopCacheEq(T nocache)
+        [ArgumentsSource(nameof(Paths))]
+        public CacheCode<string> MakeCacheCode(string path)
         {
-            var dictionary = new Dictionary<CacheCode<T>, int>(CacheCodeEqualityComparer<T>.Instance);
-            var value = nocache.CacheCode();
-
-            dictionary.Add(value, 0);
-            dictionary[value] = 1;
-            dictionary.Remove(value);
-            return dictionary;
+            return new CacheCode<string>(path, comparer);
         }
     }
 }
