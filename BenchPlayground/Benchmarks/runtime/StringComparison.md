@@ -1,3 +1,4 @@
+```ini
 // AfterAll
 // Benchmark Process 81424 has exited with code 0.
 
@@ -377,7 +378,7 @@ Intel Core i9-9880H CPU 2.30GHz, 1 CPU, 16 logical and 8 physical cores
 .NET SDK=6.0.401
   [Host]     : .NET 6.0.9 (6.0.922.41905), X64 RyuJIT
   DefaultJob : .NET 6.0.9 (6.0.922.41905), X64 RyuJIT
-
+```
 
 | Method |     ComparisonString |           Comparison |       Mean |      Error |     StdDev |     Median | Ratio | Allocated |
 |------- |--------------------- |--------------------- |-----------:|-----------:|-----------:|-----------:|------:|----------:|
